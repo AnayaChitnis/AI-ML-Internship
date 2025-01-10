@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Review Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input, textarea {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #movies div {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Movie Review Database</h1>
+    <form id="movie-form">
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="review" placeholder="Review" required></textarea>
+        <button type="submit">Add Movie</button>
+    </form>
+    <div id="movies"></div>
+
+    <script>
+        const apiURL = "http://127.0.0.1:5000/movies";
+
+        // Fetch movies
+        async function fetchMovies() {
+            const response = await fetch(apiURL);
+            const movies = await response.json();
+            displayMovies(movies);
+        }
+
+        // Display movies
+        function displayMovies(movies) {
+            const moviesDiv = document.getElementById("movies");
+            moviesDiv.innerHTML = "";
+            movies.forEach(movie => {
+                const movieElement = document.createElement("div");
+                movieElement.innerHTML = `
+                    <h3>${movie.title}</h3>
+                    <p>${movie.review}</p>
+                    <button onclick="deleteMovie(${movie.id})">Delete</button>
+                `;
+                moviesDiv.appendChild(movieElement);
+            });
+        }
+
+        // Add movie
+        document.getElementById("movie-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const title = document.getElementById("title").value;
+            const review = document.getElementById("review").value;
+
+            await fetch(apiURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, review }),
+            });
+
+            document.getElementById("movie-form").reset();
+            fetchMovies();
+        });
+
+        // Delete movie
+        async function deleteMovie(id) {
+            await fetch(`${apiURL}/${id}`, { method: "DELETE" });
+            fetchMovies();
+        }
+
+        // Initialize
+        fetchMovies();
+    </script>
+</body>
+</html>
